@@ -65,9 +65,9 @@ export default function Home() {
 
   const refreshInventory = async () => {
     await updateInventory(sortFunction).then((inventory) => {
-      setItems([...inventory]);
+      setItems(inventory);
       if (tempSearchItems.length !== 0) {
-        setTempSearchItems([...inventory]);
+        setTempSearchItems(inventory);
         filterItemsByName(inventory);
       }
     });
@@ -223,7 +223,7 @@ export default function Home() {
                         <Input
                           type="number"
                           className="rounded-none"
-                          defaultValue={item.quantity}
+                          value={item.quantity}
                         />
                         <Button
                           className="rounded-s-none"
