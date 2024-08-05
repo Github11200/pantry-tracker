@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
-import { Inter as FontSans } from "next/font/google";
+import { Lexend } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { Analytics } from "@vercel/analytics/react";
 
-const fontSans = FontSans({
+const lexend = Lexend({
+  weight: "400",
+  variable: "--font-lexend",
   subsets: ["latin"],
-  variable: "--font-sans",
 });
 
 export const metadata: Metadata = {
@@ -25,8 +27,8 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={cn(
-          "min-h-screen bg-background font-sans antialiased",
-          fontSans.variable
+          "min-h-screen bg-background antialiased",
+          lexend.className
         )}
       >
         <ThemeProvider
@@ -37,6 +39,7 @@ export default function RootLayout({
         >
           {children}
           <Toaster richColors duration={1000} />
+          <Analytics />
         </ThemeProvider>
       </body>
     </html>

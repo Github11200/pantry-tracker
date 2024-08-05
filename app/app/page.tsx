@@ -40,6 +40,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ModeToggle } from "@/components/theme-mode-toggle";
 
 export default function Home() {
   const [items, setItems] = useState<PantryItem[]>([]);
@@ -49,11 +50,16 @@ export default function Home() {
   const [sortFunction, setSortFunction] = useState<SortFunction>("name");
   const [recipe, setRecipe] = useState<string>("");
   const [recipeTitle, setRecipeTitle] = useState<string>("Generating...");
+  const loading = useRef<boolean>(true);
   const search = useRef<string>("");
 
   useEffect(() => {
     (async () => {
-      setItems(await updateInventory(sortFunction));
+      updateInventory(sortFunction)
+        .then((inventory) => {
+          setItems(inventory);
+        })
+        .then(() => (loading.current = false));
     })();
   }, []);
 
@@ -105,6 +111,9 @@ export default function Home() {
 
   return (
     <div className="p-10 grid gap-10">
+      <div className="justify-self-end">
+        <ModeToggle />
+      </div>
       <h1 className="text-6xl text-center">Pantry</h1>{" "}
       <div className="flex flex-col gap-2 mx-auto">
         <div className="flex gap-2">
@@ -157,7 +166,7 @@ export default function Home() {
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectItem value="name">Item Name</SelectItem>
+                <SelectItem value="name">Name</SelectItem>
                 <SelectItem value="ascending">Ascending</SelectItem>
                 <SelectItem value="descending">Descending</SelectItem>
               </SelectGroup>
@@ -185,65 +194,69 @@ export default function Home() {
           </DialogContent>
         </Dialog>
       </div>
-      <div className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-3">
-        {tempSearchItems.length === 0 && search.current !== "" ? (
-          <p>No items match your search...</p>
-        ) : (
-          (tempSearchItems.length === 0 ? items : tempSearchItems).map(
-            (item, i) => {
-              return (
-                <Card key={i}>
-                  <CardHeader>
-                    <CardTitle>{item.name}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>Quantity:</p>
-                    <CardDescription className="flex">
+      {loading.current ? (
+        <Skeleton className="min-w-max h-56" />
+      ) : (
+        <div className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-3">
+          {tempSearchItems.length === 0 && search.current !== "" ? (
+            <p>No items match your search...</p>
+          ) : (
+            (tempSearchItems.length === 0 ? items : tempSearchItems).map(
+              (item, i) => {
+                return (
+                  <Card key={i}>
+                    <CardHeader>
+                      <CardTitle className="font-light">{item.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p>Quantity:</p>
+                      <CardDescription className="flex mt-2">
+                        <Button
+                          className="rounded-r-none"
+                          onClick={async () => {
+                            await removeItem({ name: item.name, quantity: 1 });
+                            await refreshInventory();
+                          }}
+                        >
+                          -
+                        </Button>
+                        <Input
+                          type="number"
+                          className="rounded-none"
+                          defaultValue={item.quantity}
+                        />
+                        <Button
+                          className="rounded-s-none"
+                          onClick={async () => {
+                            await addItem({ name: item.name, quantity: 1 });
+                            await refreshInventory();
+                          }}
+                        >
+                          +
+                        </Button>
+                      </CardDescription>
+                    </CardContent>
+                    <CardFooter className="flex justify-end">
                       <Button
-                        className="rounded-r-none"
+                        variant="destructive"
                         onClick={async () => {
-                          await removeItem({ name: item.name, quantity: 1 });
+                          await removeItem({
+                            name: item.name,
+                            quantity: item.quantity,
+                          });
                           await refreshInventory();
                         }}
                       >
-                        -
+                        Delete
                       </Button>
-                      <Input
-                        type="number"
-                        className="rounded-none"
-                        value={item.quantity}
-                      />
-                      <Button
-                        className="rounded-s-none"
-                        onClick={async () => {
-                          await addItem({ name: item.name, quantity: 1 });
-                          await refreshInventory();
-                        }}
-                      >
-                        +
-                      </Button>
-                    </CardDescription>
-                  </CardContent>
-                  <CardFooter className="flex justify-end">
-                    <Button
-                      variant="destructive"
-                      onClick={async () => {
-                        await removeItem({
-                          name: item.name,
-                          quantity: item.quantity,
-                        });
-                        await refreshInventory();
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  </CardFooter>
-                </Card>
-              );
-            }
-          )
-        )}
-      </div>
+                    </CardFooter>
+                  </Card>
+                );
+              }
+            )
+          )}
+        </div>
+      )}
     </div>
   );
 }
