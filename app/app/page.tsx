@@ -75,7 +75,8 @@ export default function Home() {
 
   const onSubmit = async () => {
     addItem({ name: newItemName, quantity: newItemQuantity });
-    setItems([...(await updateInventory(sortFunction))]);
+    // setItems([...(await updateInventory(sortFunction))]);
+    refreshInventory();
     setNewItemName("");
     setNewItemQuantity(1);
   };
