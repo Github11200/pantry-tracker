@@ -1,4 +1,4 @@
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { firestore } from "@/firebase";
 import {
   collection,
@@ -46,6 +46,7 @@ export const updateInventory = async (
     docsItems.push({ name: doc.id, quantity: doc.data().quantity });
   });
   docsItems = sortItems(docsItems, sortFunction);
+
   return docsItems;
 };
 
@@ -58,12 +59,10 @@ export const addItem = async (item: PantryItem) => {
     await setDoc(docRef, {
       quantity: quantity + item.quantity,
     });
-  } else await setDoc(docRef, { quantity: 1 });
-
-  toast({
-    title: "Item added to inventory",
-    description: `${item.name} has been added to your inventory.`,
-  });
+  } else {
+    await setDoc(docRef, { quantity: item.quantity });
+    toast.success("Item added to your pantry!");
+  }
 };
 
 export const removeItem = async (item: PantryItem) => {
@@ -72,7 +71,10 @@ export const removeItem = async (item: PantryItem) => {
 
   if (docSnap.exists()) {
     const { quantity } = docSnap.data();
-    if (quantity === 1 || quantity === item.quantity) await deleteDoc(docRef);
-    else await setDoc(docRef, { quantity: quantity - item.quantity });
+    // If the quantity is 1 or the same as the item quantity, delete the doc
+    if (quantity === 1 || quantity === item.quantity) {
+      await deleteDoc(docRef);
+      toast.success("Item removed from your pantry!");
+    } else await setDoc(docRef, { quantity: quantity - item.quantity });
   }
 };
