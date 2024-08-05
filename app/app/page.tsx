@@ -63,9 +63,21 @@ export default function Home() {
     })();
   }, []);
 
+  const refreshInventory = async () => {
+    await updateInventory(sortFunction).then((inventory) => {
+      console.log(inventory);
+
+      setItems(inventory);
+      if (tempSearchItems.length !== 0) {
+        setTempSearchItems(inventory);
+        filterItemsByName(inventory);
+      }
+    });
+  };
+
   const onSubmit = async () => {
     addItem({ name: newItemName, quantity: newItemQuantity });
-    setItems(await updateInventory(sortFunction));
+    refreshInventory();
     setNewItemName("");
     setNewItemQuantity(1);
   };
@@ -76,16 +88,6 @@ export default function Home() {
         item.name.toLowerCase().includes(search.current.toLowerCase())
       )
     );
-  };
-
-  const refreshInventory = async () => {
-    await updateInventory(sortFunction).then((inventory) => {
-      setItems(inventory);
-      if (tempSearchItems.length !== 0) {
-        setTempSearchItems(inventory);
-        filterItemsByName(inventory);
-      }
-    });
   };
 
   const generateRecipe = async () => {
