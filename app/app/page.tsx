@@ -66,7 +66,6 @@ export default function Home() {
   const refreshInventory = async () => {
     await updateInventory(sortFunction).then((inventory) => {
       console.log(inventory);
-
       setItems(inventory);
       if (tempSearchItems.length !== 0) {
         setTempSearchItems(inventory);
@@ -77,7 +76,7 @@ export default function Home() {
 
   const onSubmit = async () => {
     addItem({ name: newItemName, quantity: newItemQuantity });
-    refreshInventory();
+    await refreshInventory();
     setNewItemName("");
     setNewItemQuantity(1);
   };
